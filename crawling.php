@@ -53,6 +53,7 @@ if (isset($_GET['btsubmit'])) {
       //   echo mysqli_error($query_update);
       // }
     }
+    header("Location: http://localhost/ansen-ecommerce/index.php");
   } else if ($kata_kunci != "" && $id_akun != null && $_GET['btsubmit'] == 'crawling') {
     $kata_kunci;
     $id_akun;

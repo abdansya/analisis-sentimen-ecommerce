@@ -186,3 +186,18 @@ a.navbar-brand {
 .main .input-group{
   width: 20%;
 }
+
+.pilihan-view h5{
+  padding-left: 20px;
+  font-size: 18px;
+}
+
+#grafikArea{
+  margin-bottom: 50px;
+}
+
+
+.tentang-kami{
+  height: 100vh;
+  margin: 50px;
+}

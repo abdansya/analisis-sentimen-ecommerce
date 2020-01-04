@@ -1,5 +1,6 @@
 <?php
 include_once 'function/f_tampildata.php';
+include_once 'model/model_index.php';
 include_once 'crawling.php';
 ?>
 

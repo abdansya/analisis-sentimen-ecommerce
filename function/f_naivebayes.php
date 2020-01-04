@@ -190,6 +190,7 @@ class Naive_bayes extends Koneksi {
 	public function klasifikasi_sentimen_ig($batas_ambang_ig) {
 		echo "Threshold = ".$batas_ambang_ig;
 		echo "<br><br>";
+		$this->con->query("UPDATE `data_training_tes` SET `sentimen_ig` = ''");
 		$query_dok = $this->con->query("SELECT `id_training`, `tweet_preprocessing` FROM data_training_tes ORDER BY `id_training`");
 		while ($row_dok = $query_dok->fetch_array()) {
 			$prob_kata_positif = [];
@@ -338,25 +339,41 @@ class Naive_bayes extends Koneksi {
 	// }
 
 	public function akurasi($threshold, $time)	{
-		$jumlah_sama = 0;
-		$jumlah_tidak_sama = 0;
-		$query_testing  = $this->con->query("SELECT `id_training`, `sentimen_ig` FROM `data_training_tes` ORDER BY `id_training`");
-		while ($row_tes = $query_testing->fetch_array()) {
-			$query_training = $this->con->query("SELECT count(id_training) FROM `data_training` WHERE `id_training` = ".$row_tes['id_training']." AND `sentimen` = '".$row_tes['sentimen_ig']."' ORDER BY `id_training`");
-			$row_train = $query_training->fetch_row();
-			if ($row_train[0] == 1) {
-				$jumlah_sama += 1;
-			} else {
-				$jumlah_tidak_sama += 1;
+		$true_positif = 0;
+		$true_negatif = 0;
+		$false_positif = 0;
+		$false_negatif = 0;
+		$query_testing_p  = $this->con->query("SELECT `id_training`, `sentimen_ig` FROM `data_training_tes` WHERE `sentimen_ig` = 'P' ORDER BY `id_training`");
+		while ($row_tes_p = $query_testing_p->fetch_array()) {
+			$query_training_p = $this->con->query("SELECT count(`id_training`) FROM `data_training` WHERE `id_training` = ".$row_tes_p['id_training']." AND `sentimen` = '".$row_tes_p['sentimen_ig']."' ORDER BY `id_training`");
+			$row_train_p = $query_training_p->fetch_row();
+			if ($row_train_p[0] == 1) {
+				$true_positif += 1;
+			} elseif ($row_train_p[0] == 0) {
+				$false_positif += 1;
 			}
 		}
-		$akurasi = round($jumlah_sama/($jumlah_sama+$jumlah_tidak_sama),4)*100;
-		echo "Jumlah sama : ".$jumlah_sama;
+		$query_testing_n  = $this->con->query("SELECT `id_training`, `sentimen_ig` FROM `data_training_tes` WHERE `sentimen_ig` = 'N' ORDER BY `id_training`");
+		while ($row_tes_n = $query_testing_n->fetch_array()) {
+			$query_training_n = $this->con->query("SELECT count(id_training) FROM `data_training` WHERE `id_training` = ".$row_tes_n['id_training']." AND `sentimen` = '".$row_tes_n['sentimen_ig']."' AND `sentimen` = 'N' ORDER BY `id_training`");
+			$row_train_n = $query_training_n->fetch_row();
+			if ($row_train_n[0] == 1) {
+				$true_negatif += 1;
+			} elseif ($row_train_n[0] == 0){
+				$false_negatif += 1;
+			}
+		}
+		$akurasi = round((($true_positif+$true_negatif)/($true_positif+$true_negatif+$false_positif+$false_negatif)),4)*100;
+		echo "True Positif : ".$true_positif;
 		echo "<br>";
-		echo "Jumlah tidak sama : ".$jumlah_tidak_sama;
+		echo "True Negatif : ".$true_negatif;
+		echo "<br>";
+		echo "False Positif : ".$false_positif;
+		echo "<br>";
+		echo "False Negatif : ".$false_negatif;
 		echo "<br>";
 		echo "Akurasi : ".$akurasi;
-		$query_simpan = $this->con->query("INSERT INTO `data_akurasi` (`threshold`, `akurasi`, `waktu`) VALUES ($threshold, $akurasi, $time)");
+		$query_simpan = $this->con->query("INSERT INTO `data_akurasi` (`threshold`, `true_positif`, `true_negatif`, `false_positif`, `false_negatif`, `akurasi`, `waktu`) VALUES ($threshold, $true_positif, $true_negatif, $false_positif, $false_negatif, $akurasi, $time)");
 	}
 
 
